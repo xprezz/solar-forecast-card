@@ -24,7 +24,7 @@
  *   hourly: ...
  */
 
-const CARD_VERSION = "2.0.0";
+const CARD_VERSION = "2.1.0";
 
 // Map of slot name -> suffix(es) to match against entity_id, in priority order.
 const SLOT_SUFFIXES = {
@@ -145,19 +145,15 @@ class SolarForecastCard extends HTMLElement {
       .chart-legend .sw-pred { background:#f5a623; }
       .chart-legend .sw-actual { background:#2bb35e; }
       .chart-legend .sw-now { background:var(--primary-color); height:10px; width:2px; border-radius:0; }
-      .sun { width:72px; height:72px; min-width:72px; border-radius:50%; position:relative; overflow:hidden;
+      .sun { width:72px; height:72px; min-width:72px; position:relative;
              display:flex; align-items:center; justify-content:center; line-height:1; user-select:none;
-             animation: pulse 4s ease-in-out infinite; border:1px solid rgba(255,255,255,.38);
-             box-shadow:inset 0 1px 0 rgba(255,255,255,.34), 0 2px 6px rgba(0,0,0,.12); }
-      .sun::before { content:""; position:absolute; inset:8px; border-radius:50%; background:rgba(255,255,255,.16); }
-      .sun::after { content:""; position:absolute; width:28px; height:28px; top:10px; right:10px; border-radius:50%;
-                    background:rgba(255,255,255,.18); }
-      .sun-glyph { position:relative; z-index:1; font-size:1.8rem; transform:translateY(-1px); }
-      .sun.sunny { background:linear-gradient(180deg, #f8d27a 0%, #eab65a 100%); color:#825100; }
-      .sun.cloudy { background:linear-gradient(180deg, #dbe4f2 0%, #bcc8dd 100%); color:#5c6881; }
-      .sun.rainy { background:linear-gradient(180deg, #c6d4e6 0%, #9cafca 100%); color:#47607f; }
-      .sun.moon { background:linear-gradient(180deg, #dbe0f1 0%, #b9c4dd 100%); color:#64739a; }
-      @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+             animation: pulse 4s ease-in-out infinite; }
+      .sun-glyph { position:relative; z-index:1; font-size:3rem; line-height:1; }
+      .sun.sunny  { color:#eab65a; }
+      .sun.cloudy { color:#8a98b3; }
+      .sun.rainy  { color:#5d7da3; }
+      .sun.moon   { color:#7a8aae; }
+      @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
       .kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
       .kpi { background:var(--secondary-background-color); border-radius:10px; padding:10px 12px; }
       .kpi-label { font-size:.7rem; color:var(--secondary-text-color); text-transform:uppercase; letter-spacing:.05em; }
@@ -562,7 +558,7 @@ class SolarForecastCard extends HTMLElement {
           <path class="line" d="${line}"/>
           <path class="actual-line" d="${actualPath}" fill="none"/>
           ${nowLine}
-          <text class="axis" x="10" y="20" text-anchor="start">${maxKw.toFixed(1)} kW</text>
+          <text class="axis" x="10" y="20" text-anchor="start">Peak: ${maxKw.toFixed(1)} kW</text>
           ${clickRects}
         </svg>
         <div class="chart-legend">
