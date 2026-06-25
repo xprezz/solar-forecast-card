@@ -24,7 +24,7 @@
  *   hourly: ...
  */
 
-const CARD_VERSION = "2.1.0";
+const CARD_VERSION = "2.1.1";
 
 // Map of slot name -> suffix(es) to match against entity_id, in priority order.
 const SLOT_SUFFIXES = {
@@ -558,7 +558,7 @@ class SolarForecastCard extends HTMLElement {
           <path class="line" d="${line}"/>
           <path class="actual-line" d="${actualPath}" fill="none"/>
           ${nowLine}
-          <text class="axis" x="10" y="20" text-anchor="start">Peak: ${maxKw.toFixed(1)} kW</text>
+          <text class="axis" x="10" y="20" text-anchor="start">Peak hourly avg: ${maxKw.toFixed(1)} kW</text>
           ${clickRects}
         </svg>
         <div class="chart-legend">
