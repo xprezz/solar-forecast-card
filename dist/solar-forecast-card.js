@@ -24,7 +24,7 @@
  *   hourly: ...
  */
 
-const CARD_VERSION = "2.1.1";
+const CARD_VERSION = "2.2.0";
 
 // Map of slot name -> suffix(es) to match against entity_id, in priority order.
 const SLOT_SUFFIXES = {
@@ -358,12 +358,12 @@ class SolarForecastCard extends HTMLElement {
       const headlineVal = (isPast && hasActual) ? Number(d.actual) : Number(d.predicted ?? 0);
       const barW = Math.min(100, (headlineVal / maxDay) * 100);
       let deltaHtml = "";
-      if (hasActual && d.predicted != null) {
+      if (isPast && hasActual && d.predicted != null) {
         const dv = d.actual - d.predicted;
         const sign = dv >= 0 ? "+" : "";
         const cl = dv >= 0 ? "delta-pos" : "delta-neg";
         deltaHtml = `<div class="day-delta ${cl}">${sign}${dv.toFixed(0)}</div>`;
-      } else if (isFuture && d.predicted != null) {
+      } else if ((isToday || isFuture) && d.predicted != null) {
         deltaHtml = `<div class="day-delta" style="color:var(--secondary-text-color)">pred</div>`;
       } else {
         deltaHtml = `<div class="day-delta" style="visibility:hidden">.</div>`;
@@ -607,8 +607,13 @@ class SolarForecastCard extends HTMLElement {
               <div class="kpi-val">${model ? Number(model.state).toFixed(1) : "—"} kWh</div>
             </div>
             <div class="kpi">
-              <div class="kpi-label">Accuracy (14d)</div>
-              <div class="kpi-val">${dailyLog && dailyLog.attributes.mape_pct_last_14d != null ? (100 - dailyLog.attributes.mape_pct_last_14d).toFixed(0) + "%" : (model ? (model.attributes.trained_on_days || "—") + " d" : "—")}</div>
+              <div class="kpi-label">Accuracy (7d)</div>
+              <div class="kpi-val">${(() => {
+                const att = dailyLog && dailyLog.attributes;
+                const m = att ? (att.mape_pct_last_7d_complete ?? att.mape_pct_last_14d) : null;
+                if (m != null) return (100 - m).toFixed(0) + "%";
+                return model ? (model.attributes.trained_on_days || "—") + " d" : "—";
+              })()}</div>
             </div>
           </div>
 
