@@ -10,11 +10,10 @@ integration. Single file, no dependencies, container‑aware layout.
 
 - Hero with 7‑day total, today’s predicted/actual, tomorrow’s prediction
 - Dynamic weather hero icon (sun / moon / cloud / rain) by time of day
-- KPI strip: peak kW, model RMSE, rolling 14‑day accuracy
+- KPI strip: peak hourly average kW, model RMSE, rolling 7-day accuracy
 - Scrollable 7‑day history & forecast strip (drill into any day)
 - Hourly predicted vs actual area+line chart across the visible 7 days
 - Per‑day weather detail (irradiance, sunshine, cloud, temp, precip, UV)
-- “SURPLUS / GOOD / MODEST / LOW” strategy hints for today & tomorrow
 
 ## Install via HACS
 

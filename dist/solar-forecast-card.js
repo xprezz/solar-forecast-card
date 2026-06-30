@@ -18,13 +18,11 @@
  *   tomorrow: ...
  *   week: ...
  *   peak: ...
- *   strategy_today: ...
- *   strategy_tomorrow: ...
  *   model: ...
  *   hourly: ...
  */
 
-const CARD_VERSION = "2.2.0";
+const CARD_VERSION = "3.0.0";
 
 // Map of slot name -> suffix(es) to match against entity_id, in priority order.
 const SLOT_SUFFIXES = {
@@ -32,8 +30,6 @@ const SLOT_SUFFIXES = {
   tomorrow:          ["_tomorrow"],
   week:              ["_7_day_total", "_week_total"],
   peak:              ["_forecast_peak_power", "_peak_power", "_peak"],
-  strategy_today:    ["_strategy_today"],
-  strategy_tomorrow: ["_strategy_tomorrow"],
   model:             ["_model_rmse", "_model"],
   hourly:            ["_hourly_forecast", "_hourly"],
   today_actual:      ["_today_actual"],
@@ -95,8 +91,6 @@ class SolarForecastCard extends HTMLElement {
           today: ["today"], tomorrow: ["tomorrow"],
           week: ["7 day total", "week total"],
           peak: ["forecast peak power", "peak power"],
-          strategy_today: ["strategy today"],
-          strategy_tomorrow: ["strategy tomorrow"],
           model: ["model rmse"],
           hourly: ["hourly forecast"],
         }[slot] || [];
@@ -198,14 +192,6 @@ class SolarForecastCard extends HTMLElement {
       .wx .txt { display:flex; flex-direction:column; min-width:0; }
       .wx .lbl { font-size:.62rem; color:var(--secondary-text-color); text-transform:uppercase; letter-spacing:.04em; }
       .wx .val { font-size:.9rem; font-weight:600; font-variant-numeric:tabular-nums; }
-      .strat { padding:12px 14px; border-radius:10px; border-left:4px solid var(--divider-color);
-               background:var(--secondary-background-color); margin-bottom:10px; }
-      .strat.surplus { border-left-color: var(--success-color, #43a047); }
-      .strat.good { border-left-color: #f5a623; }
-      .strat.modest { border-left-color: var(--warning-color, #ff9800); }
-      .strat.low { border-left-color: var(--error-color, #e53935); }
-      .strat-head { font-weight:600; margin-bottom:4px; }
-      .strat ul { margin:4px 0 0; padding-left:18px; font-size:.85rem; color:var(--secondary-text-color); }
       .chart-wrap { position:relative; }
       svg.chart { width:100%; height:300px; display:block; }
       svg.chart path.area { fill:url(#g); }
@@ -274,8 +260,6 @@ class SolarForecastCard extends HTMLElement {
     const tomorrow = s(slots.tomorrow);
     const week = s(slots.week);
     const peak = s(slots.peak);
-    const stratT = s(slots.strategy_today);
-    const stratTomo = s(slots.strategy_tomorrow);
     const model = s(slots.model);
     const hourly = s(slots.hourly);
     const todayActual = s(slots.today_actual);
@@ -380,9 +364,6 @@ class SolarForecastCard extends HTMLElement {
 
     // Build detail panel for selected day
     const detailHtml = selectedDate ? this._renderDetail(byDate.get(selectedDate), todayIso, todayActual) : "";
-
-    // strategies — only today + tomorrow are exposed as separate sensors
-    const strategies = [stratT, stratTomo].filter(Boolean);
 
     // Hourly curve chart across the visible 7-day window (168 points).
     // For each day we use:
@@ -633,17 +614,6 @@ class SolarForecastCard extends HTMLElement {
         </div>
 
         <div class="col-r">
-          ${strategies.map(st => {
-            const cls = st.state || "low";
-            const tips = (st.attributes.tips || []).map(t => `<li>${t}</li>`).join("");
-            const date = st.attributes.date || "";
-            const wd = date ? new Date(date).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" }) : "";
-            return `<div class="strat ${cls}">
-              <div class="strat-head">${wd} · ${st.attributes.predicted_kwh || 0} kWh · ${cls.toUpperCase()}</div>
-              <ul>${tips}</ul>
-            </div>`;
-          }).join("")}
-
           <div class="chart-wrap">${chartSvg}</div>
 
           <div class="model-info">
