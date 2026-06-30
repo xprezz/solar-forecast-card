@@ -22,7 +22,7 @@
  *   hourly: ...
  */
 
-const CARD_VERSION = "3.0.0";
+const CARD_VERSION = "3.1.0";
 
 // Map of slot name -> suffix(es) to match against entity_id, in priority order.
 const SLOT_SUFFIXES = {
@@ -34,6 +34,8 @@ const SLOT_SUFFIXES = {
   hourly:            ["_hourly_forecast", "_hourly"],
   today_actual:      ["_today_actual"],
   daily_log:         ["_daily_log"],
+  negative_window:   ["_negative_price_window"],
+  throttle_minutes:  ["_throttled_minutes_today", "_throttle_minutes_today"],
 };
 
 class SolarForecastCard extends HTMLElement {
@@ -126,6 +128,11 @@ class SolarForecastCard extends HTMLElement {
         svg.chart { height: 360px; }
       }
       .hero { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+      .banner { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:10px;
+                margin-bottom:12px; font-size:.85rem; line-height:1.35; }
+      .banner-icon { font-size:1.1rem; line-height:1; }
+      .banner-neg { background:rgba(220,82,82,.12); border-left:3px solid #dc5252; color:var(--primary-text-color); }
+      .banner-throttle { background:rgba(245,166,35,.12); border-left:3px solid #f5a623; color:var(--primary-text-color); }
       .hero-num { font-size:2.4rem; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
       .hero-unit { font-size:0.55em; color:var(--secondary-text-color); margin-left:4px; }
       .hero-sub { color:var(--secondary-text-color); font-size:.85rem; margin-top:4px; display:flex; flex-direction:column; gap:2px; }
@@ -264,6 +271,8 @@ class SolarForecastCard extends HTMLElement {
     const hourly = s(slots.hourly);
     const todayActual = s(slots.today_actual);
     const dailyLog = s(slots.daily_log);
+    const negWindow = s(slots.negative_window);
+    const throttleMin = s(slots.throttle_minutes);
 
     if (!today) {
       this._content.innerHTML = `<div style="padding:8px;">
@@ -551,9 +560,34 @@ class SolarForecastCard extends HTMLElement {
 
     const heroWx = this._heroWeather(today);
 
+    // Banners for opt-in modules (price + throttle). Only render when sensor present.
+    const banners = [];
+    if (negWindow && Number(negWindow.state) > 0) {
+      const a = negWindow.attributes || {};
+      const fmtT = (iso) => iso ? new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "?";
+      const minP = a.window_min_price != null ? a.window_min_price : "?";
+      const unit = a.unit || "";
+      banners.push(`<div class="banner banner-neg">
+        <span class="banner-icon">⚡</span>
+        <span><b>Negative-price window ahead</b> — ${negWindow.state}h from ${fmtT(a.window_start)} to ${fmtT(a.window_end)} · low ${minP}${unit ? " " + unit : ""}.
+        Consider pre-charging the battery or running flexible loads in that window.</span>
+      </div>`);
+    }
+    if (throttleMin && Number(throttleMin.state) > 0) {
+      const a = throttleMin.attributes || {};
+      const activeNow = a.active ? " (still active)" : "";
+      banners.push(`<div class="banner banner-throttle">
+        <span class="banner-icon">🐢</span>
+        <span><b>Throttled ${throttleMin.state} min today${activeNow}.</b>
+        Today's actual will be lower than the forecast by roughly this much.</span>
+      </div>`);
+    }
+    const bannerHtml = banners.join("");
+
     this._content.innerHTML = `
       <div class="layout">
         <div class="col-l">
+          ${bannerHtml}
           <div class="hero">
             <div>
               <div class="hero-num">${Number(week ? week.state : 0).toFixed(0)}<span class="hero-unit">kWh / 7 days</span></div>
